@@ -1,0 +1,84 @@
+
+\usepackage{amssymb, amsmath, bm}
+\usepackage{mathabx}
+\usepackage{indentfirst}
+\usepackage{grffile}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{xcolor,colortbl}
+\usepackage{braket}
+\usepackage{pifont}
+\usepackage{cancel}
+\usepackage{slashed}
+\usepackage[final]{pdfpages}
+\usepackage[small]{caption}
+\usepackage{multicol}
+\usepackage{subfig}
+\usepackage{cite}
+\usepackage{hyperref}
+\usepackage{setspace}
+
+\captionsetup[figure]{width=.85\textwidth}
+\captionsetup[subfigure]{margin=0pt}
+
+\renewcommand{\and}{\text{\hspace{0.25in}and\hspace{0.25in}}}
+\newcommand{\Thus}{\hspace{0.25in}\Longrightarrow\hspace{0.25in}}
+\newcommand{\thus}{\Longrightarrow}
+\newcommand{\half}{\ensuremath{\tfrac{1}{2}}}
+\newcommand{\pder}[2]{\ensuremath{\frac{\partial #1}{\partial #2}}}
+\newcommand{\der}[2]{\ensuremath{\frac{d #1}{d #2}}}
+\newcommand{\psder}[2]{\ensuremath{\frac{\partial^2 #1}{\partial #2 {}^2}}}
+\newcommand{\mat}[1]{\ensuremath{\begin{pmatrix}#1\end{pmatrix}}}
+\newcommand{\smMat}[1]{\ensuremath{\left(\begin{smallmatrix}#1\end{smallmatrix}}\right)}
+\newcommand{\twoVec}[2]{\ensuremath{\begin{pmatrix}#1\\#2\end{pmatrix}}}
+\newcommand{\twoMat}[4]{\ensuremath{\begin{pmatrix}#1 & #2\\#3 & #4\end{pmatrix}}}
+\newcommand{\twoSm}[2]{\ensuremath{\left (\begin{smallmatrix}#1\\#2\end{smallmatrix} \right)}}
+\newcommand{\Ham}{\ensuremath{\mathcal{H}}}
+\newcommand{\Lg}{\ensuremath{\mathcal{L}}}
+\newcommand{\M}{\ensuremath{\mathcal{M}}}
+\renewcommand{\P}{\ensuremath{\mathcal{P}}}
+\newcommand{\T}{\ensuremath{\mathcal{T}}}
+\newcommand{\F}{\ensuremath{\mathcal{F}}}
+\newcommand{\J}{\ensuremath{\mathcal{J}}}
+\newcommand{\E}{\ensuremath{\mathcal{E}}}
+\renewcommand{\O}{\ensuremath{\mathcal{O}}}
+\newcommand{\tss}[1]{\textsuperscript{#1}}
+\newcommand{\real}{\text{Re}}
+\newcommand{\imag}{\text{Im}}
+\newcommand{\sgn}{\text{sgn}}
+\newcommand{\Tr}{\text{Tr}}
+\renewcommand{\d}{\hspace{0.25em}\text{d}\hspace{-0.05em}}
+\newcommand{\xmark}{\ding{55}}
+
+\newcommand{\missing}{\textbf{\textcolor{red}{[MISSING!]}}}
+\newcommand{\fixme}{\textbf{\textcolor{red}{[FIXME!]}}}
+\newcommand{\note}[1]{\textbf{\textcolor{red}{[#1]}}}
+
+\newcommand{\unsim}{\ensuremath{\mbox{$\sim$}}}
+
+\newlength\dlf\newcommand\alignedbox[2]{
+  &
+  \begingroup
+  \settowidth\dlf{$\displaystyle #1$}
+  \addtolength\dlf{\fboxsep+\fboxrule}
+  \hspace{-\dlf}
+  \boxed{#1\hspace{0.008in}=\hspace{0.008in} #2}
+\endgroup
+}
+
+\hypersetup{
+    colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue,
+        pdftitle={},
+          pdfauthor={James Saxon}
+      pdfpagemode={UseOutlines},
+          bookmarksopen=true,bookmarksnumbered=true,pdfstartview={Fit}
+}
+
+
+%\renewcommand*\theenumi{\Alph{enumi}}
+\renewcommand*\labelenumi{(\theenumi)}
+\renewcommand{\labelitemi}{$\blacktriangleright$}
+
+\newcommand{\link}[2]{\href{#1}{\textcolor{blue}{\underline{#2}}}}
+
+
