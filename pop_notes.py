@@ -18,6 +18,7 @@ CITE  = "New Source"          # Cite
 color_dict = {226 : SUMM,  # Purple 
               253 : DNU,   # Red/Pink
               248 : NOTE,  # Yellow
+              255 : NOTE,  # Yellow
               178 : QUOTE, # Green
               188 : QUOTE, # Green
               164 : CITE,  # Blue
@@ -25,7 +26,7 @@ color_dict = {226 : SUMM,  # Purple
              }
 
 
-def main(filename, basepage = 1):
+def main(filename, basepage = 1, quiet = False):
 
     doc = popplerqt5.Poppler.Document.load(filename)
 
@@ -80,7 +81,7 @@ def main(filename, basepage = 1):
 
     with open(filename.replace(".pdf", ".txt"), "w") as out:
 
-        out.write("#### Notes for " + filename + "\n\n\n")
+        out.write("#### Notes for " + filename + "\n\n")
 
         if any([v["context"] == SUMM for v in annotations]):
             out.write("Summary Impressions :: \n")
@@ -106,8 +107,9 @@ def main(filename, basepage = 1):
             out.write("\n\n")
                 
         for v in annotations:
+            out.write("Notes and Quotes :: \n")
             if v["context"] in [NOTE, QUOTE]:
-                s = "{page:4} ".format(**v)
+                s = "{page:>4d}".format(**v)
                 if v["context"] == NOTE:  s+= " :N: "
                 if v["context"] == QUOTE: s+= " :Q: "
                 if v["note"]: s += "{note}".format(**v)
@@ -116,6 +118,9 @@ def main(filename, basepage = 1):
 
                 out.write(s)
 
+    if not quiet:
+        with open(filename.replace(".pdf", ".txt"), "r") as out:
+            for l in out: print(l[:-1])
 
 
 if __name__ == "__main__":
@@ -125,8 +130,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
     parser.add_argument("-p", "--pages", type=int, default = 1)
+    parser.add_argument("-q", "--quiet", action="store_true")
     args = parser.parse_args()
 
-    main(args.filename, args.pages)
+    main(args.filename, args.pages, args.quiet)
 
 
