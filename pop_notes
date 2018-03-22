@@ -1,21 +1,22 @@
 #!/usr/bin/python3.5
-# coding: ascii
+# -*- coding: utf-8 -*-
 
 ## requires /usr/bin/pip3 install python-poppler-qt5
 ## For mac: sudo port install poppler-qt5
 
 import popplerqt5
-import os, sys, urllib
+import os, sys, urllib, re
 import PyQt5
 
 
 SUMM  = "Summary"             # Purple 
 DNU   = "Did not understand"  # Red
 NOTE  = "Note"                # Yellow
-QUOTE = "Quote"               # Quote/Highlight
-CITE  = "New Source"          # Cite
+QUOTE = "Quote"               # Green
+CITE  = "New Source"          # Blue
 
 color_dict = {226 : SUMM,  # Purple 
+              230 : SUMM,  # Purple 
               253 : DNU,   # Red/Pink
               248 : NOTE,  # Yellow
               255 : NOTE,  # Yellow
@@ -26,7 +27,7 @@ color_dict = {226 : SUMM,  # Purple
              }
 
 
-def main(filename, basepage = 1, quiet = False):
+def main(filename, text, jtex, basepage = 1, quotes = False, silent = False):
 
     doc = popplerqt5.Poppler.Document.load(filename)
 
@@ -58,12 +59,17 @@ def main(filename, basepage = 1, quiet = False):
             try: note["context"] = color_dict[annotation.style().color().red()]
             except KeyError:
 
+                if annotation.style().color().red() == 0 and \
+                   annotation.style().color().green() == 0 and \
+                   annotation.style().color().blue() == 0: continue
+
                 print("Do not have color (r, g, b) = ({}, {}, {})".format( 
                       annotation.style().color().red(),
                       annotation.style().color().green(),
                       annotation.style().color().blue()))
+                print("page", basepage+i, "  >>  ", note["text"])
+                continue
 
-                sys.exit()
 
             # retrieving the highlight is a bit more finnicky,
             # since PDFs aren't really designed for this.
@@ -75,51 +81,72 @@ def main(filename, basepage = 1, quiet = False):
 
                     bdy = PyQt5.QtCore.QRectF()
                     bdy.setCoords(*rect)
-                    note["text"] += page.text(bdy) + " "
+                    if quotes:
+                        txt = page.text(bdy).strip()
+                        if not txt: continue
+                        if txt[-1] == "-": txt = txt[:-1].strip()
+                        txt = txt.replace("-\n", "").replace("\n", " ")
+                        note["text"] += txt + " "
 
             annotations.append(note)
 
-    with open(filename.replace(".pdf", ".txt"), "w") as out:
+    with open(text + filename.replace(".pdf", ".txt"), "w") as out:
 
-        out.write("#### Notes for " + filename + "\n\n")
+        out.write(">* Notes for " + filename + "\n\n")
 
         if any([v["context"] == SUMM for v in annotations]):
-            out.write("Summary Impressions :: \n")
+            out.write(">>* Summary Impressions :: \\\\ \n")
             for v in annotations:
                 if v["context"] is SUMM:
                     out.write("{note}\n".format(**v))
             out.write("\n\n")
 
         if any([v["context"] == CITE for v in annotations]):
-            out.write("Additional sources to check out :: \n")
+            out.write(">>* Additional sources to check out :: \\\\ \n")
             for v in annotations:
                 if v["context"] is CITE:
                     if v["note"]: out.write("{note}\n".format(**v))
-                    out.write(" >> {text}\n\n".format(**v))
+                    if v["text"]: out.write("- {text}\n\n".format(**v))
             out.write("\n\n")
                 
         if any([v["context"] == DNU for v in annotations]):
-            out.write("Did not understand :: \n")
+            out.write(">>* Did not understand :: \\\\ \n")
             for v in annotations:
                 if v["context"] is DNU:
                     out.write("{note}\n".format(**v))
-                    out.write(" >> {text}\n\n".format(**v))
+                    out.write("- {text}\n\n".format(**v))
             out.write("\n\n")
                 
-        for v in annotations:
-            out.write("Notes and Quotes :: \n")
-            if v["context"] in [NOTE, QUOTE]:
-                s = "{page:>4d}".format(**v)
-                if v["context"] == NOTE:  s+= " :N: "
-                if v["context"] == QUOTE: s+= " :Q: "
-                if v["note"]: s += "{note}".format(**v)
-                if v["text"]: s += " >>>> \"\"{text}\"\"".format(**v)
-                s += "\n"
 
-                out.write(s)
+        if any([v["context"] in [NOTE, QUOTE] for v in annotations]):
+            out.write(">>* Notes and Quotes :: \n")
+            for v in annotations:
+                if v["context"] in [NOTE, QUOTE]:
+                    s = "-[{page:>4d}]".format(**v)
+                    ##  if v["context"] == NOTE:
+                    ##      if latex: s+= " \\textbf{N} "
+                    ##      else: s += " :N: "
+                    ##  if v["context"] == QUOTE:
+                    ##      if latex: s+= " \\textbf{Q} "
+                    ##      else: s += " :Q: "
+                    if v["note"]: s += "{note}".format(**v)
+                    if v["text"]: 
+                        s += "\n\\begin{{lquote}}\n{text}\n\end{{lquote}}\n".format(**v)
 
-    if not quiet:
-        with open(filename.replace(".pdf", ".txt"), "r") as out:
+                    s += "\n\n"
+
+                    out.write(s)
+
+    if jtex:
+        with open(jtex + filename.replace(".pdf", ""), "w") as out:
+            for line in open(text + filename.replace(".pdf", ".txt"), "r"):
+                if ">* Notes for" in line:
+                    source = re.sub(r".* Notes for ([0-9A-Za-z_]*).pdf.*", r"\1", line.strip())
+                    line = "\\lrsection{{{}}}{{{}}}\n".format(source, source.replace("_", "\_"))
+                out.write(line)
+
+    if not silent:
+        with open(text + filename.replace(".pdf", ".txt"), "r") as out:
             for l in out: print(l[:-1])
 
 
@@ -129,10 +156,13 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("filename")
-    parser.add_argument("-p", "--pages", type=int, default = 1)
-    parser.add_argument("-q", "--quiet", action="store_true")
+    parser.add_argument("-p", "--pages",  type=int, default = 1)
+    parser.add_argument("-s", "--silent", action="store_true")
+    parser.add_argument("-q", "--quotes", action="store_true")
+    parser.add_argument("-t", "--text",   type=str, default = "notes/")
+    parser.add_argument("-j", "--jtex",   type=str, default = "jtex/")
     args = parser.parse_args()
 
-    main(args.filename, args.pages, args.quiet)
+    main(args.filename, args.text, args.jtex, args.pages, args.quotes, args.silent)
 
 
