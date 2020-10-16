@@ -29,6 +29,8 @@ color_dict = {226 : SUMM,  # Purple
 
 def main(filename, text, jtex, basepage = 1, quotes = False, silent = False):
 
+    print(filename)
+
     doc = popplerqt5.Poppler.Document.load(filename)
 
     n_pages = doc.numPages()
@@ -83,43 +85,47 @@ def main(filename, text, jtex, basepage = 1, quotes = False, silent = False):
                     bdy.setCoords(*rect)
                     if quotes:
                         txt = page.text(bdy).strip()
+                        # print(txt)
                         if not txt: continue
                         if txt[-1] == "-": txt = txt[:-1].strip()
                         txt = txt.replace("-\n", "").replace("\n", " ")
+                        txt = txt.replace("$", "\$").replace("#", "\#")
                         note["text"] += txt + " "
 
             annotations.append(note)
 
-    with open(text + filename.replace(".pdf", ".txt"), "w") as out:
+    with open(text + filename.replace(".pdf", ".txt").split("/")[-1], "w") as out:
 
-        out.write(">* Notes for " + filename + "\n\n")
+        out.write(">* Notes for " + filename.replace(".pdf", "").split("/")[-1] + "\n\n")
 
         if any([v["context"] == SUMM for v in annotations]):
-            out.write(">>* Summary Impressions :: \\\\ \n")
+            out.write(">>>* Summary Impressions :: \\\\ \n")
             for v in annotations:
                 if v["context"] is SUMM:
-                    out.write("{note}\n".format(**v))
+                    if v["note"]: out.write("{note}\n".format(**v))
+                    if v["text"]: out.write("- {text}\n\n".format(**v))
+
             out.write("\n\n")
 
         if any([v["context"] == CITE for v in annotations]):
-            out.write(">>* Additional sources to check out :: \\\\ \n")
+            out.write(">>>* Additional sources to check out :: \\\\ \n")
             for v in annotations:
                 if v["context"] is CITE:
-                    if v["note"]: out.write("{note}\n".format(**v))
+                    if v["note"]: out.write("{note}\n\n".format(**v))
                     if v["text"]: out.write("- {text}\n\n".format(**v))
             out.write("\n\n")
                 
         if any([v["context"] == DNU for v in annotations]):
-            out.write(">>* Did not understand :: \\\\ \n")
+            out.write(">>>* Did not understand :: \\\\ \n")
             for v in annotations:
                 if v["context"] is DNU:
-                    out.write("{note}\n".format(**v))
-                    out.write("- {text}\n\n".format(**v))
+                    if v["note"]: out.write("{note}\n".format(**v))
+                    if v["text"]: out.write("- {text}\n\n".format(**v))
             out.write("\n\n")
                 
 
         if any([v["context"] in [NOTE, QUOTE] for v in annotations]):
-            out.write(">>* Notes and Quotes :: \n")
+            out.write(">>>* Notes and Quotes :: \n")
             for v in annotations:
                 if v["context"] in [NOTE, QUOTE]:
                     s = "-[{page:>4d}]".format(**v)
@@ -138,15 +144,16 @@ def main(filename, text, jtex, basepage = 1, quotes = False, silent = False):
                     out.write(s)
 
     if jtex:
-        with open(jtex + filename.replace(".pdf", ""), "w") as out:
-            for line in open(text + filename.replace(".pdf", ".txt"), "r"):
+        with open(jtex + "/".join(filename.replace(".pdf", "").split("/")[-2:]), "w") as out:
+            for line in open(text + filename.replace(".pdf", ".txt").split("/")[-1], "r"):
                 if ">* Notes for" in line:
-                    source = re.sub(r".* Notes for ([0-9A-Za-z_]*).pdf.*", r"\1", line.strip())
-                    line = "\\lrsection{{{}}}{{{}}}\n".format(source, source.replace("_", "\_"))
+                    source  = filename.replace(".pdf", "").split("/")[-1]
+                    section = " :: ".join(filename.replace(".pdf", "").split("/")[-2:]).replace("_", "\_")
+                    line = "\\lrsection{{{}}}{{{}}}\n".format(source, section)
                 out.write(line)
 
     if not silent:
-        with open(text + filename.replace(".pdf", ".txt"), "r") as out:
+        with open(text + filename.replace(".pdf", ".txt").split("/")[-1], "r") as out:
             for l in out: print(l[:-1])
 
 
