@@ -56,7 +56,10 @@ symDict = {
   "║".decode('utf-8'): "\parallel",
   "┴".decode('utf-8'): "\\bot",
   "¡".decode('utf-8'): "\\text{<}",
-  "¿".decode('utf-8'): "\\text{>}"
+  "¿".decode('utf-8'): "\\text{>}",
+  "§".decode('utf-8'): "\S{}",
+  "“".decode('utf-8'): "``",
+  "”".decode('utf-8'): '"',
 }
 
 grDict = {

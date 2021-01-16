@@ -4,6 +4,7 @@
 import sys
 import os
 import string
+import re
 
 graphs = ["eps", "pdf", "png", "jpg"]
 
@@ -23,141 +24,40 @@ TYPES = {
            "subsubitem"       : [ 12, "---",  "\\begin{itemize}\n\\begin{itemize}\n\\begin{itemize}\n   \item  %s \n\end{itemize}\n\end{itemize}\n\end{itemize}"],
            "subitemenum"      : [ 13, "--#",  "\\begin{itemize}\n\\begin{itemize}\n\\begin{enumerate}\n   \item  %s \n\end{enumerate}\n\end{itemize}\n\end{itemize}"],
            "subitem"          : [ 14, "--",   "\\begin{itemize}\n\\begin{itemize}\n  \item  %s \n\end{itemize}\n\end{itemize}"],
-           "itemenum"         : [ 15, "-#",   "\\begin{itemize}\n\\begin{enumerate} \item  %s \end{enumerate}\n\end{itemize}"],
-           "item"             : [ 16, "-",    "\\begin{itemize}\n\item  %s \n\end{itemize}"],
-           "numalign"         : [ 17, "#@",   "\\begin{align}\n %s \end{align}"],
-           "enumii"           : [ 18, "#--",  "\\begin{enumerate}\n\\begin{itemize}\n\\begin{itemize}\n \item  %s \n\end{itemize}\n\end{itemize}\n\end{enumerate}"],
-           "enumi"            : [ 19, "#-",   "\\begin{enumerate}\n\\begin{itemize}\n \item  %s \n\end{itemize}\n\end{enumerate}"],
-           "enum"             : [ 20, "#",   "\\begin{enumerate}\n\item  %s \n\end{enumerate}"],
-           "align"            : [ 21, "@",   "\\begin{align*}\n %s \end{align*}"]
+           "subenumitem"      : [ 15, "-#-",  "\\begin{itemize}\n\\begin{enumerate}\n\\begin{itemize} \item  %s \end{itemize}\n\end{enumerate}\n\end{itemize}"],
+           "itemenum"         : [ 16, "-#",   "\\begin{itemize}\n\\begin{enumerate}\n \item  %s \end{enumerate}\n\end{itemize}"],
+           "item"             : [ 17, "-",    "\\begin{itemize}\n\item  %s \n\end{itemize}"],
+           "numalign"         : [ 18, "#@",   "\\begin{align}\n %s \end{align}"],
+           "enumii"           : [ 19, "#--",  "\\begin{enumerate}\n\\begin{itemize}\n\\begin{itemize}\n \item  %s \n\end{itemize}\n\end{itemize}\n\end{enumerate}"],
+           "enumi"            : [ 20, "#-",   "\\begin{enumerate}\n\\begin{itemize}\n \item  %s \n\end{itemize}\n\end{enumerate}"],
+           "enum"             : [ 21, "#",   "\\begin{enumerate}\n\item  %s \n\end{enumerate}"],
+           "align"            : [ 22, "@",   "\\begin{align*}\n %s \end{align*}"]
         }
 
 
 appendix = False
 
-prologue= """
-\documentclass[%d pt]{%s}
+prologue= """\documentclass[%d pt]{%s}
 \usepackage[top=%.2fin,bottom=%.2fin,left=%.2fin,right=%.2fin]{geometry}
-%%\documentclass[11pt,reqno]{amsart}
-%%\usepackage[top=1.8cm,bottom=1.8cm,left=1.8cm,right=1.8cm]{geometry}
-\usepackage{amssymb, amsmath, bm}
-\usepackage{mathabx}
-\usepackage{indentfirst}
-\usepackage{grffile}
-\usepackage{multicol}
-\usepackage{multirow}
-\usepackage{xcolor,colortbl}
-\usepackage{braket}
-\usepackage{pifont}
-\usepackage{cancel}
-\usepackage{slashed}
-\usepackage[final]{pdfpages}
-\usepackage{multicol}
-\usepackage[caption = false]{subfig}
-\usepackage{simplewick}
-\usepackage{cite}
-\usepackage{hyperref}
-\usepackage{wasysym}
-\usepackage{setspace}
 
-\\renewcommand{\_}{\\texttt{\detokenize{_}}}
-\\renewcommand{\\and}{\\text{\hspace{0.25in}and\hspace{0.25in}}}
-\\newcommand{\Thus}{\hspace{0.25in}\Longrightarrow\hspace{0.25in}}
-\\newcommand{\\thus}{\Longrightarrow}
-\\newcommand{\half}{\ensuremath{\\tfrac{1}{2}}}
-\\newcommand{\pder}[2]{\ensuremath{\\frac{\partial #1}{\partial #2}}}
-\\newcommand{\der}[2]{\ensuremath{\\frac{d #1}{d #2}}}
-\\newcommand{\psder}[2]{\ensuremath{\\frac{\partial^2 #1}{\partial #2 {}^2}}}
-\\newcommand{\mat}[1]{\ensuremath{\\begin{pmatrix}#1\end{pmatrix}}}
-\\newcommand{\smMat}[1]{\ensuremath{\left(\\begin{smallmatrix}#1\end{smallmatrix}}\\right)}
-\\newcommand{\\twoVec}[2]{\ensuremath{\\begin{pmatrix}#1\\\\#2\end{pmatrix}}}
-\\newcommand{\\twoMat}[4]{\ensuremath{\\begin{pmatrix}#1 & #2\\\\#3 & #4\end{pmatrix}}}
-\\newcommand{\\twoSm}[2]{\ensuremath{\left (\\begin{smallmatrix}#1\\\\#2\end{smallmatrix} \\right)}}
-\\newcommand{\Ham}{\ensuremath{\mathcal{H}}}
-\\newcommand{\Lg}{\ensuremath{\mathcal{L}}}
-\\newcommand{\M}{\ensuremath{\mathcal{M}}}
-\\renewcommand{\P}{\ensuremath{\mathcal{P}}}
-\\newcommand{\T}{\ensuremath{\mathcal{T}}}
-\\newcommand{\F}{\ensuremath{\mathcal{F}}}
-\\newcommand{\J}{\ensuremath{\mathcal{J}}}
-\\newcommand{\E}{\ensuremath{\mathcal{E}}}
-\\renewcommand{\O}{\ensuremath{\mathcal{O}}}
-\\newcommand{\\tss}[1]{\\textsuperscript{#1}}
-\\newcommand{\\real}{\\text{Re}}
-\\newcommand{\imag}{\\text{Im}}
-\\newcommand{\sgn}{\\text{sgn}}
-\\newcommand{\Tr}{\\text{Tr}}
-\\renewcommand{\d}{\hspace{0.25em}\\text{d}\hspace{-0.05em}}
-\\newcommand{\\xmark}{\ding{55}}
-\\newcommand{\inb}{\ensuremath{\\text{~nb\\tss{-1}}}}
-\\newcommand{\ifb}{\ensuremath{\\text{~fb\\tss{-1}}}}
-\\newcommand{\iab}{\ensuremath{\\text{~ab\\tss{-1}}}}
-\\newcommand{\ipb}{\ensuremath{\\text{~pb\\tss{-1}}}}
-\\newcommand{\gev}{\\text{~GeV}}
-\\newcommand{\mev}{\\text{~MeV}}
-\\newcommand{\\tev}{\\text{~TeV}}
+\input{js_header.tex}
 
-\usepackage{xspace}
-\usepackage{upgreek}
-\\newcommand{\cm}{\ensuremath{~\\text{cm}}\\xspace}
-\\newcommand{\um}{\ensuremath{~\upmu\\text{m}}\\xspace}
-\\newcommand{\us}{\ensuremath{~\upmu\\text{s}}\\xspace}
-\\newcommand{\mm}{\ensuremath{~\\text{mm}}\\xspace}
+%% Header from jtex file.
+%s 
 
-
-\\newcommand{\\missing}{\\textbf{\\textcolor{red}{[MISSING!]}}}
-\\newcommand{\\fixme}{\\textbf{\\textcolor{red}{[FIXME!]}}}
-\\newcommand{\\note}[1]{\\textbf{\\textcolor{red}{[#1]}}}
-
-\\newcommand{\wick}[4]{\contraction[0.25em]{#1}{#2}{#3}{#4}}
-\\newcommand{\unsim}{\ensuremath{\mbox{$\sim$}}}
-
-\\newcommand{\met}{E_\\text{T}^\\text{miss}}
-\\newcommand{\metTr}{E_\\text{T}^\\text{miss, Truth}}
-\\newcommand{\metRe}{E_\\text{T}^\\text{miss, Reco.}}
-
-\\newcommand{\pT}{p_\\text{T}}
-\\newcommand{\pt}{p_\\text{T}}
-
-\\newlength\dlf\\newcommand\\alignedbox[2]{
-  &
-  \\begingroup
-  \settowidth\dlf{$\displaystyle #1$}
-  \\addtolength\dlf{\\fboxsep+\\fboxrule}
-  \hspace{-\dlf}
-  \\boxed{#1\hspace{0.008in}=\hspace{0.008in} #2}
-\endgroup
-}
-
-\usepackage{tikz}
-\usetikzlibrary{svg.path}
-%% \\newcommand{\cbox}{\\begin{tikzpicture}\draw[thick] (0,0) square(1.0ex); \end{tikzpicture}}
-\\newcommand{\pie}[2]{\\begin{tikzpicture} \draw[thick] (0,0) rectangle ++(1.5ex,1.5ex);\end{tikzpicture}}
- 
 \hypersetup{
-    colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue,
-        pdftitle={%s},
-          pdfauthor={%s}
-      pdfpagemode={UseOutlines},
-          bookmarksopen=true,bookmarksnumbered=true,pdfstartview={Fit}
+  colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue,
+  pdftitle={%s}, pdfauthor={%s}
+  pdfpagemode={UseOutlines},
+  bookmarksopen=true, bookmarksnumbered=true,
+  pdfstartview={Fit}
 }
-
-\\newcommand{\link}[2]{\href{#1}{\\textcolor{blue}{#2}}}
-
-%% header
-%s  
-
-
-%%\\renewcommand*\\theenumi{\\Alph{enumi}}
-\\renewcommand*\labelenumi{(\\theenumi)}
-\\renewcommand{\labelitemi}{$\\blacktriangleright$}
-\\renewcommand{\labelitemiii}{$-$}
-\\renewcommand{\labelitemiv}{$-$}
-
 
 \\title[%s]{%s}
 \date{\\today}
-\\author[%s]{%s}
+\\author[%s]{\\vspace{-1.7em} %s}
+%s
+%s
 
 \\begin{document}
 
@@ -179,6 +79,7 @@ parDict = {
 
 symDict = {
   "½".decode('utf-8'): "\half ", 
+  "¼".decode('utf-8'): "1/4 ",
   "ℚ".decode('utf-8'): "\mathbb{Q} ", 
   "ℤ".decode('utf-8'): "\mathbb{Z} ", 
   "×".decode('utf-8'): "\\times ", 
@@ -195,8 +96,8 @@ symDict = {
   "≈".decode('utf-8'): "\\approx ", 
   "≡".decode('utf-8'): "\equiv ", 
   "∝".decode('utf-8'): "\propto ", 
-  "∈".decode('utf-8'): "\in ", 
-  "≠".decode('utf-8'): "\neq ", 
+  "∈".decode('utf-8'): "\,\in\, ", 
+  "≠".decode('utf-8'): "\\neq ", 
   "∞".decode('utf-8'): "\infty ", 
   "√".decode('utf-8'): "\sqrt ", 
   "ħ".decode('utf-8'): "\hbar ", 
@@ -208,7 +109,25 @@ symDict = {
   "∂".decode('utf-8'): "\partial ", 
   "ℓ".decode('utf-8'): "\ell ",
   "÷".decode('utf-8'): "\\frac",
+  "☺".decode('utf-8'): "\smiley{}",
+  "║".decode('utf-8'): "\parallel",
+  "┴".decode('utf-8'): "\\bot",
+  "¡".decode('utf-8'): "\\text{<}",
+  "¿".decode('utf-8'): "\\text{>}",
   "□".decode('utf-8'): "\pie{0}{red}",
+  "§".decode('utf-8'): "\S",
+  "‘".decode('utf-8'): "`", 
+  "’".decode('utf-8'): "'",  
+  "“".decode('utf-8'): "``", 
+  "”".decode('utf-8'): "''", 
+  "′".decode('utf-8'): "'",
+  "—".decode('utf-8'): "--", 
+  "–".decode('utf-8'): "--",
+  " 􏰝".decode('utf-8'): " ",
+  u'\xa0': " ",
+  "…".decode('utf-8'): "\ldots{}",
+  "€".decode('utf-8'): "E",
+  "®".decode('utf-8'): "\ensuremath{\circledR}",
 }
 
 grDict = {
@@ -295,23 +214,34 @@ subDict = {
   "ᵀ".decode('utf-8'): "_T ",
   "ᵢ".decode('utf-8'): "_i ",
   "ⱼ".decode('utf-8'): "_j ",
+  "ᵣ".decode('utf-8'): "_r ",
 }
 
 accDict = {
   "á".decode('utf-8'): "\\'a",
+  "ó".decode('utf-8'): "\\'o",
+  "ä".decode('utf-8'): "\\\"a",
+  "ï".decode('utf-8'): "\\\"i",
+  "ö".decode('utf-8'): "\\\"o",
+  "ü".decode('utf-8'): "\\\"u",
   "à".decode('utf-8'): "\`a",
   "é".decode('utf-8'): "\\'e",
   "è".decode('utf-8'): "\`e",
+  "Å".decode('utf-8'): "\AA",
+  "ﬀ".decode('utf-8'): "ff",
+  "ﬁ".decode('utf-8'): "fi",
 }
 
 modDict = {
   u"\u20D7": "\\bm",
   u"\u0305": "\\overline",
   u"\u0307": "\dot",
-  u"\u0308": "\ddot",
+  # u"\u0308": "\ddot",
+  u"\u0308": "\\\" ",
   u"\u0338": "\slashed",
   u"\u0303": "\\tilde",
-  u"\u0302": "\\hat"
+  u"\u0302": "\\hat",
+  u"\u030a": ""
 }
 
 ########################################
@@ -393,8 +323,10 @@ def ProcessFigure(line):
         linewidth = 0
       linewidth += w
 
-      figure += "\subfloat[" + ToTeX(subCaption[i]) + "]"
-      figure += "{\includegraphics[width=" + str(w) + "\\textwidth]{" + g + "}" + subLabel[i] + "}"
+      figure += "\subfloat"
+      if len(ToTeX(subCaption[i]).strip()):
+        figure += "[" + ToTeX(subCaption[i]) + "]"
+      figure += "{\includegraphics[width=" + str(w) + "\\textwidth]{" + g + "}" + subLabel[i].strip() + "}"
       figure += "\n"
 
   if len(figCaption) == 1:
@@ -408,12 +340,30 @@ def ProcessFigure(line):
 #########################################################
 #########################################################
 
+def CleanDocument(doc):
+
+  ret = ""
+
+  for c in doc:
+    try:
+      ret += c.encode('ascii')
+    except UnicodeEncodeError:
+      
+      print "Could not encode character %s" % repr(c)[3:-1]
+      ret += " "
+
+  return ret
+
+#########################################################
+#########################################################
+
 def ToTeX(line):
 
   line = ModifierReplacement(line)
   line = FixParentheses(line)
   line = SubsAndSupers(line)
-  return SymbolReplacement(line)
+  line = SymbolReplacement(line)
+  return line.strip()
 
 #########################################################
 #########################################################
@@ -436,12 +386,15 @@ def FixParentheses(line):
     if line[i] not in parDict or \
       (FORMAT not in ["equation", "numequation", "boxed", "align", "numalign"] and (line[:i].count("$") % 2) == 0) or \
       (line[i] in ["}", "{"] and line[i-1] != "\\") or \
-      (line[i] in [")", "("] and line[i-1] == "\\"):
+      ("big" in temp[-4:].lower()):
       temp += line[i]
+    elif line[i] in [")", "("] and line[i-1] == "\\":
+      temp = temp[:-1] + line[i]
     else:
       temp += parDict[line[i]]
 
   return temp
+
 
 #########################################################
 #########################################################
@@ -503,7 +456,9 @@ def GetHeader(input):
   title = ""
   short_title = ""
   author = "James Saxon"
-  short_author = ""
+  institute = "Center for Data and Computing, University of Chicago"
+  email = "jsaxon@uchicago.edu"
+  short_author = "Saxon"
   abstract = ""
   docclass = "amsart"
   TITLE = True
@@ -524,10 +479,14 @@ def GetHeader(input):
       short_title = ToTeX(line[4:].decode('utf-8'))
     if line[:3] == "^A:":
       author = ToTeX(line[3:].decode('utf-8'))
+    if line[:3] == "^I:":
+      institute = ToTeX(line[3:].decode('utf-8'))
+    if line[:3] == "^E:":
+      email = line[3:].decode('utf-8').strip()
     if line[:4] == "^SA:":
       short_author = ToTeX(line[4:].decode('utf-8'))
     if line[:4] == "^AB:":
-      abstract = "\\begin{abstract}\n" + ToTeX(line[4:].strip().decode('utf-8')) + "\n\end{abstract}\n"
+      abstract += ToTeX(line[4:].strip().decode('utf-8')) + "\n\n"
     if line[:3] == "^C:":
       docclass = line[3:].strip()
     if line[:3] == "^G:":
@@ -550,8 +509,14 @@ def GetHeader(input):
   if short_author == "":
     short_author = author
 
-  header = prologue % (font, docclass, mT, mB, mL, mR, title, author, header, short_title, title, short_author, author, abstract)
-  if TITLE: header += "\n\maketitle\n\n"
+  if abstract:
+    abstract = "\\begin{abstract}\n" + abstract + "\n\end{abstract}\n"
+
+  if institute: institute = "\\address{%s \\vspace{0.5em}}" % institute
+  if email: email = "\\email{%s}" % email 
+
+  header = prologue % (font, docclass, mT, mB, mL, mR, header, title, author, short_title, title, short_author, author, email, institute, abstract)
+  if TITLE: header += "\n\\vspace{-1em}\maketitle\n\n"
 
   return header
 
@@ -581,7 +546,8 @@ def main(input, output, header, pdflatex):
     decline = GetSpecialFormat(line)
 
     # Graphics are tricky... they get pulled out.
-    if max([decline.find("." + g) for g in graphs]) != -1:
+    if max([decline.find("." + g) for g in graphs]) != -1 \
+       and "href" not in decline:
       document += ProcessFigure(decline)
       continue
 
@@ -595,6 +561,7 @@ def main(input, output, header, pdflatex):
 
   file.close()
 
+  document = CleanDocument(document)
 
   while "\end{itemize}\n\\begin{itemize}\n" in document or \
         "\end{enumerate}\n\\begin{enumerate}\n" in document:
@@ -608,7 +575,20 @@ def main(input, output, header, pdflatex):
   if header: document = header + document + epilogue
 
   ofile = open(output, "w")
-  ofile.write(document)
+
+  if "\\begin{itemize}\n\\begin{itemize}\n" in document:
+    idx = document.find("\\begin{itemize}\n\\begin{itemize}\n")
+    print "double indent at ::", document[idx+30:idx+80]
+    sys.exit()
+
+  try:
+    ofile.write(document)
+  except UnicodeEncodeError as err:
+    err_int = int(list(err)[-2])
+    print output, "UnicodeEncodeError ::", repr(document[err_int-20:err_int+20])
+    # print document[err_int-20:err_int+20].encode('ascii')
+    sys.exit()
+
   ofile.close()
 
   if pdflatex: os.system('pdflatex ' + output)

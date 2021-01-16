@@ -12,7 +12,7 @@ import string
 from ltb_helper import accDict, grDict, symDict, SymbolReplacement, ModifierReplacement
 
 prologue = """
-\documentclass[dvipsnames,table]{beamer}
+\documentclass[dvipsnames,table,bigger]{beamer}
   
 \usetheme{jamiesimple}
 \usepackage{type1cm}
@@ -120,6 +120,7 @@ prologue = """
 \\newcommand{\cb}{\cellcolor{infnblue}}
 
 \\renewcommand{\\tt}[1]{\\texttt{#1}}
+
 \\renewcommand{\_}{\\texttt{\detokenize{_}}}
 \\newcommand{\unsim}{\\raisebox{.25ex}{\ensuremath{\mbox{\scriptsize $\sim\,$}}}}
 \\renewcommand{\\L}{\\mathcal{L}}

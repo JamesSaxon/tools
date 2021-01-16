@@ -1,0 +1,123 @@
+\usepackage{amssymb, amsmath, bm}
+\usepackage{amsaddr}
+\usepackage{dsfont}
+\usepackage{mathabx}
+\usepackage{indentfirst}
+\usepackage{grffile}
+\usepackage{multicol}
+\usepackage{multirow}
+\usepackage{xcolor,colortbl}
+\usepackage{braket}
+\usepackage{pifont}
+\usepackage{cancel}
+\usepackage{slashed}
+\usepackage[final]{pdfpages}
+\usepackage{multicol}
+\usepackage[caption = false]{subfig}
+\usepackage{hyperref}
+\usepackage{wasysym}
+\usepackage{setspace}
+
+\usepackage{pdflscape}
+\usepackage{array}
+
+\usepackage{cite}
+
+\renewcommand{\_}{\texttt{\detokenize{_}}}
+\renewcommand{\tt}[1]{\texttt{#1}}
+\renewcommand{\and}{\text{\hspace{0.25in}and\hspace{0.25in}}}
+\newcommand{\Thus}{\hspace{0.25in}\Longrightarrow\hspace{0.25in}}
+\newcommand{\thus}{\Longrightarrow}
+\newcommand{\half}{\ensuremath{\tfrac{1}{2}}}
+\newcommand{\pder}[2]{\ensuremath{\frac{\partial #1}{\partial #2}}}
+\newcommand{\der}[2]{\ensuremath{\frac{d #1}{d #2}}}
+\newcommand{\psder}[2]{\ensuremath{\frac{\partial^2 #1}{\partial #2 {}^2}}}
+\newcommand{\mat}[1]{\ensuremath{\begin{pmatrix}#1\end{pmatrix}}}
+\newcommand{\Ham}{\ensuremath{\mathcal{H}}}
+\newcommand{\Lg}{\ensuremath{\mathcal{L}}}
+\newcommand{\M}{\ensuremath{\mathcal{M}}}
+\renewcommand{\P}{\ensuremath{\mathcal{P}}}
+\newcommand{\T}{\ensuremath{\mathcal{T}}}
+\newcommand{\F}{\ensuremath{\mathcal{F}}}
+\newcommand{\J}{\ensuremath{\mathcal{J}}}
+\newcommand{\E}{\ensuremath{\mathcal{E}}}
+\renewcommand{\O}{\ensuremath{\mathcal{O}}}
+\newcommand{\tss}[1]{\textsuperscript{#1}}
+\newcommand{\real}{\text{Re}}
+\newcommand{\imag}{\text{Im}}
+\newcommand{\sgn}{\text{sgn}}
+\newcommand{\Tr}{\text{Tr}}
+\renewcommand{\d}{\hspace{0.25em}\text{d}\hspace{-0.05em}}
+
+\usepackage{xspace}
+\usepackage{upgreek}
+\newcommand{\cm}{\ensuremath{~\text{cm}}\xspace}
+\newcommand{\um}{\ensuremath{~\upmu\text{m}}\xspace}
+\newcommand{\us}{\ensuremath{~\upmu\text{s}}\xspace}
+\newcommand{\mm}{\ensuremath{~\text{mm}}\xspace}
+
+\definecolor{gold}{rgb}{1.0,0.8,0}
+\colorlet{darkgreen}{black!30!blue!25!green}
+\definecolor{chred}{rgb}{0.5, 0, 0}
+
+\newcommand{\chred}[1]{\textbf{\textcolor{chred}{#1}}}
+\newcommand{\chdgr}[1]{\textbf{\textcolor{chdgr}{#1}}}
+\newcommand{\chlgr}[1]{\textbf{\textcolor{chlgr}{#1}}}
+\newcommand{\pennred}[1]{\textbf{\textcolor{pennred}{#1}}}
+\newcommand{\pennblue}[1]{\textbf{\textcolor{pennblue}{#1}}}
+\newcommand{\red}[1]{\textbf{\textcolor{red}{#1}}}
+\newcommand{\orange}[1]{\textbf{\textcolor{orange}{#1}}}
+\newcommand{\gold}[1]{\textbf{\textcolor{gold}{#1}}}
+\newcommand{\green}[1]{\textbf{\textcolor{darkgreen}{#1}}}
+\newcommand{\blue}[1]{\textbf{\textcolor{blue}{#1}}}
+
+
+
+\newcommand{\missing}{\textbf{\textcolor{red}{[MISSING!]}}}
+\newcommand{\fixme}{\textbf{\textcolor{red}{[FIXME!]}}}
+\newcommand{\note}[1]{\textcolor{red}{[#1]}}
+\newcommand{\fnote}[1]{\footnote{\textbf{\textcolor{red}{#1}}}}
+
+\newcommand{\linklogo}{\includegraphics[height=0.8em]{link.pdf}}
+
+\newcommand{\unsim}{\ensuremath{\mbox{$\sim$}}}
+
+
+\newlength\dlf\newcommand\alignedbox[2]{
+  &
+  \begingroup
+  \settowidth\dlf{$\displaystyle #1$}
+  \addtolength\dlf{\fboxsep+\fboxrule}
+  \hspace{-\dlf}
+  \boxed{#1\hspace{0.008in}=\hspace{0.008in} #2}
+\endgroup
+}
+
+\newenvironment{lquote}{%
+  \fontsize{11}{11} \selectfont
+    \begin{itshape}
+  \list{}{%
+    \leftmargin0.75in   % this is the adjusting screw
+      \rightmargin0.3in
+  }
+  \item\relax
+}
+{\endlist\end{itshape}}
+
+
+\usepackage{tikz}
+\usetikzlibrary{svg.path}
+\usetikzlibrary{shapes.geometric}
+
+\newcommand{\pie}[2]{\begin{tikzpicture}\draw[#2, thick] (0,0) circle(0.8ex); \fill[#2, rotate=90] (0.8ex,0) arc (0:-#1:0.8ex) -- (0,0) -- cycle;\end{tikzpicture}}
+
+
+\let\defhref\href
+\renewcommand{\href}[2]{\defhref{#1}{\textcolor{blue}{#2}}}
+
+\renewcommand*\labelenumi{(\theenumi)}
+\renewcommand{\labelitemi}{$\blacktriangleright$}
+\renewcommand{\labelitemiii}{$-$}
+\renewcommand{\labelitemiv}{$-$}
+
+\newcommand{\cmark}{\green{\ding{51}}}
